@@ -38,6 +38,8 @@ dependencies:
   intl: ^0.17.0
   the_apple_sign_in: ^1.1.1
   firebase_crashlytics: ^2.6.1
+  easy_debounce: ^2.0.2+1
+  formz: ^0.4.1
 
 dev_dependencies:
   mocktail_image_network: ^0.2.0
