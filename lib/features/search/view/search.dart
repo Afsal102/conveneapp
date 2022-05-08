@@ -1,27 +1,24 @@
-import 'package:conveneapp/apis/books_finder/books_finder.dart';
 import 'package:conveneapp/core/text.dart';
-import 'package:conveneapp/features/search/model/search_book_model.dart';
+import 'package:conveneapp/features/search/controller/search_controller.dart';
 import 'package:conveneapp/features/search/view/search_book_card.dart';
 import 'package:conveneapp/theme/palette.dart';
+import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:formz/formz.dart';
 
-class SearchPage extends StatefulWidget {
-  static route() => MaterialPageRoute(
-        builder: (context) => const SearchPage(),
-        fullscreenDialog: true,
-      );
+class SearchPage extends ConsumerWidget {
   const SearchPage({Key? key}) : super(key: key);
 
-  @override
-  _SearchPageState createState() => _SearchPageState();
-}
+  static route() {
+    return MaterialPageRoute(
+      builder: (context) => const SearchPage(),
+      fullscreenDialog: true,
+    );
+  }
 
-class _SearchPageState extends State<SearchPage> {
-  TextEditingController bookController = TextEditingController();
-
-  String? searchText;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(),
       body: Column(
@@ -39,38 +36,37 @@ class _SearchPageState extends State<SearchPage> {
                   child: Padding(
                     padding: const EdgeInsets.only(left: 16.0),
                     child: TextField(
-                      decoration: const InputDecoration.collapsed(hintText: "Search Book"),
-                      controller: bookController,
-                      onSubmitted: (_) async {
-                        if (bookController.text.isNotEmpty) {
-                          searchText = bookController.text;
-                          setState(() {});
-                        }
+                      decoration: const InputDecoration(
+                        hintText: 'Search Book',
+                        border: InputBorder.none,
+                        suffixIcon: Icon(
+                          Icons.search,
+                          color: Palette.niceBlack,
+                        ),
+                      ),
+                      maxLines: 1,
+                      onChanged: (value) {
+                        final controller = ref.read(searchController.notifier);
+
+                        controller.resetStateIfSearchInputIsEmpty(value);
+
+                        EasyDebounce.debounce(
+                          'book-search',
+                          const Duration(
+                            milliseconds: 1200,
+                          ),
+                          () {
+                            controller.debounceOnSearchInputChanged(value);
+                          },
+                        );
                       },
                     ),
                   ),
                 ),
-                IconButton(
-                  onPressed: () async {
-                    if (bookController.text.isNotEmpty) {
-                      searchText = bookController.text;
-                      setState(() {});
-                    }
-                  },
-                  icon: const Icon(Icons.search),
-                ),
               ],
             ),
           ),
-          if (searchText == null)
-            const DefaultView(
-              text: "Enter something into search",
-              imagePath: "assets/defaultstates/search.png",
-            )
-          else
-            SearchView(
-              search: searchText!,
-            )
+          const SearchView()
         ],
       ),
     );
@@ -80,7 +76,11 @@ class _SearchPageState extends State<SearchPage> {
 class DefaultView extends StatelessWidget {
   final String text;
   final String imagePath;
-  const DefaultView({Key? key, required this.text, required this.imagePath}) : super(key: key);
+  const DefaultView({
+    Key? key,
+    required this.text,
+    required this.imagePath,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -108,47 +108,55 @@ class DefaultView extends StatelessWidget {
   }
 }
 
-class SearchView extends StatelessWidget {
-  final String search;
+class SearchView extends ConsumerWidget {
   const SearchView({
     Key? key,
-    required this.search,
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: BooksFinderApi().searchBooks(search),
-      builder: (BuildContext context, AsyncSnapshot<List<SearchBookModel>> booklist) {
-        if (booklist.connectionState == ConnectionState.done) {
-          if (booklist.hasData && booklist.data!.isNotEmpty) {
-            return Expanded(
-              child: ListView.builder(
-                itemCount: booklist.data!.length,
-                itemBuilder: (context, count) {
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context, booklist.data![count]);
-                    },
-                    child: SearchBookCard(book: booklist.data![count]),
-                  );
-                },
-              ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(searchController);
+    final submissionStatus = state.status;
+    if (submissionStatus.isPure) {
+      return const DefaultView(
+        text: "Enter something into search",
+        imagePath: "assets/defaultstates/search.png",
+      );
+    }
+
+    if (submissionStatus.isSubmissionInProgress) {
+      return const Expanded(
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (submissionStatus.isSubmissionSuccess) {
+      final books = state.books;
+      if (books.isEmpty) {
+        return const DefaultView(
+          text: "There were no results for this search",
+          imagePath: "assets/defaultstates/empty search.png",
+        );
+      }
+      return Expanded(
+        child: ListView.builder(
+          itemCount: books.length,
+          itemBuilder: (context, index) {
+            final book = books[index];
+            return GestureDetector(
+              onTap: () {
+                return Navigator.pop(context, book);
+              },
+              child: SearchBookCard(book: book),
             );
-          } else {
-            return const DefaultView(
-              text: "There were no results for this search",
-              imagePath: "assets/defaultstates/empty search.png",
-            );
-          }
-        } else {
-          return const Expanded(
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-      },
-    );
+          },
+        ),
+      );
+    }
+
+    //TODO(afzal): handle error UI's once books api is migrated
+    return const Offstage();
   }
 }
