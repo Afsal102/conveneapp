@@ -35,7 +35,7 @@ class Dashboard extends ConsumerWidget {
             child: Builder(
               builder: (context) {
                 final displayName =
-                    ref.watch(currentUserController).asData?.value.name ?? '';
+                    ref.watch(userInfoController).asData?.value.name ?? '';
                 if (displayName == "") {
                   return const Text(
                     'Welcome',
@@ -62,6 +62,8 @@ class Dashboard extends ConsumerWidget {
           actions: [
             Builder(
               builder: (context) {
+                String? profilePic =
+                    ref.watch(userInfoController).asData?.value.profilePic;
                 return GestureDetector(
                   key: const Key('dashBoard-openDrawer'),
                   onTap: () {
@@ -71,6 +73,10 @@ class Dashboard extends ConsumerWidget {
                     padding: const EdgeInsets.only(right: 10, top: 15),
                     child: CircleAvatar(
                       backgroundColor: Palette.niceBlack,
+                      backgroundImage:
+                          profilePic != null && profilePic.isNotEmpty
+                              ? NetworkImage(profilePic)
+                              : null,
                       radius: 24,
                       child: Builder(
                         builder: (context) {
@@ -79,11 +85,10 @@ class Dashboard extends ConsumerWidget {
                               .asData
                               ?.value
                               .name;
-                          if (userName != null) {
+                          if (userName != null && profilePic == null) {
                             return Text(userName.substring(0, 1));
                           }
-
-                          return const Icon(Icons.settings);
+                          return const SizedBox();
                         },
                       ),
                     ),
