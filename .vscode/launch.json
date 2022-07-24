@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Conveneapp Production",
+        "request": "launch",
+        "type": "dart",
+      },
+      {
+        "name": "Conveneapp Development",
+        "request": "launch",
+        "type": "dart",
+        "args": ["--dart-define=ENV=DEV"]
+      },
+    ]
+  }
