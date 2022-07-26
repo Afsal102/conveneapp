@@ -129,7 +129,13 @@ class ClubApiFirebase implements ClubApi {
       await _clubsReference.doc(club.id).update({
         'currentBook': book.toMap(),
       });
-      //TODO: add to everybodies indiviual reading
+      for (String mem in club.members) {
+        await _firebaseFirestore
+            .collection(FirebaseConstants.usersCollection)
+            .doc(mem)
+            .collection(FirebaseConstants.currentBooksCollection)
+            .add(book.toMap());
+      }
       return right(Future<void>.value());
     } on FirebaseException catch (e) {
       return left(ClubFailure.fromCode(e.code));
