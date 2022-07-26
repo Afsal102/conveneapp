@@ -36,6 +36,7 @@ class Dashboard extends ConsumerWidget {
               builder: (context) {
                 final displayName =
                     ref.watch(userInfoController).asData?.value.name ?? '';
+
                 if (displayName == "") {
                   return const Text(
                     'Welcome',
@@ -80,12 +81,11 @@ class Dashboard extends ConsumerWidget {
                       radius: 24,
                       child: Builder(
                         builder: (context) {
-                          final userName = ref
-                              .watch(currentUserController)
-                              .asData
-                              ?.value
-                              .name;
-                          if (userName != null && profilePic == null) {
+                          final userName =
+                              ref.watch(userInfoController).asData?.value.name;
+                          if (userName != null &&
+                              profilePic != null &&
+                              profilePic.isEmpty) {
                             return Text(userName.substring(0, 1));
                           }
                           return const SizedBox();

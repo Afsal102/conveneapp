@@ -8,9 +8,9 @@ class UserInfo {
   const UserInfo({
     required this.uid,
     required this.email,
-    this.name,
+    required this.name,
     required this.showTutorial,
-    this.profilePic,
+    required this.profilePic,
   });
 
   UserInfo copyWith({

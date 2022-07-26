@@ -20,7 +20,7 @@ class UserApi {
         email: user["email"] ?? "no email",
         name: user["name"] ?? "no name",
         showTutorial: user['showTutorial'] ?? true,
-        profilePic: user["profilePic"] ?? "",
+        profilePic: (user.data() as Map)["profilePic"] ?? "",
       ),
     );
   }

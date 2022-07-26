@@ -2,10 +2,8 @@ import 'dart:io';
 
 import 'package:conveneapp/apis/firebase/user.dart';
 import 'package:conveneapp/core/button.dart';
-import 'package:conveneapp/core/loading.dart';
 import 'package:conveneapp/core/utility/utils.dart';
 import 'package:conveneapp/features/authentication/controller/auth_controller.dart';
-import 'package:conveneapp/features/authentication/model/user_info.dart';
 import 'package:conveneapp/features/dashboard/controller/user_info_controller.dart';
 import 'package:conveneapp/theme/palette.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +21,7 @@ class UserSettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: UserSettingsView(),
+      body: const UserSettingsView(),
     );
   }
 }
