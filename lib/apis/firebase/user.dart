@@ -1,7 +1,10 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:conveneapp/core/errors/failures.dart';
+import 'package:conveneapp/core/type_defs/type_defs.dart';
 import 'package:conveneapp/features/authentication/model/user_info.dart';
+import 'package:dartz/dartz.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -52,7 +55,7 @@ class UserApi {
     });
   }
 
-  Future<void> updateUser({
+  FutureEitherVoid updateUser({
     required String uid,
     required File? profilePic,
     required String name,
@@ -72,8 +75,9 @@ class UserApi {
           'profilePic': profilePicUrl,
         },
       );
+      return right(null);
     } catch (e) {
-      print(e);
+      return left(StorageFailure('Some Internal Error Occurred, Please Try Again.'));
     }
   }
 }

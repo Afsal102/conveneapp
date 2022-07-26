@@ -52,3 +52,11 @@ class ClubFailure extends Failure {
     return ClubFailure();
   }
 }
+
+/// **StorageFailure**
+///
+/// {@macro failure}
+/// Used whenever there is Firebase Storage error
+class StorageFailure extends Failure {
+  StorageFailure(String message) : super(message: message);
+}
