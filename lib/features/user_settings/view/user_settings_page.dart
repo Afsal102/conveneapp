@@ -30,8 +30,7 @@ class UserSettingsView extends ConsumerStatefulWidget {
   const UserSettingsView({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _UserSettingsViewState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _UserSettingsViewState();
 }
 
 class _UserSettingsViewState extends ConsumerState<UserSettingsView> {
@@ -124,9 +123,7 @@ class _UserSettingsViewState extends ConsumerState<UserSettingsView> {
               child: const Text('Edit'),
               onPressed: () => editProfile(
                 uid,
-                nameController.text.trim().isEmpty
-                    ? displayName
-                    : nameController.text.trim(),
+                nameController.text.trim().isEmpty ? displayName : nameController.text.trim(),
                 profilePic,
               ),
             ),

@@ -7,8 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final userApiProvider = Provider<UserApi>((ref) => UserApi());
 
-final CollectionReference users =
-    FirebaseFirestore.instance.collection('users');
+final CollectionReference users = FirebaseFirestore.instance.collection('users');
 final FirebaseStorage firebaseStorage = FirebaseStorage.instance;
 
 class UserApi {
@@ -36,8 +35,7 @@ class UserApi {
     );
   }
 
-  Future<void> addUser(
-      {required String uid, String? email, String? name}) async {
+  Future<void> addUser({required String uid, String? email, String? name}) async {
     DocumentSnapshot documentSnapshot = await users.doc(uid).get();
 
     if (documentSnapshot.exists) return;
