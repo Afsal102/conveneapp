@@ -2,7 +2,6 @@ import 'package:conveneapp/apis/firebase/auth.dart';
 import 'package:conveneapp/apis/firebase/user.dart';
 import 'package:conveneapp/core/button.dart';
 import 'package:conveneapp/core/info_button.dart';
-import 'package:conveneapp/features/authentication/controller/auth_controller.dart';
 import 'package:conveneapp/features/book/controller/book_controller.dart';
 import 'package:conveneapp/features/book/view/book_slidable.dart';
 import 'package:conveneapp/features/club/controller/club_controller.dart';
@@ -15,6 +14,7 @@ import 'package:conveneapp/features/history/view/history_page.dart';
 import 'package:conveneapp/features/join_club/view/join_club.dart';
 import 'package:conveneapp/features/search/model/search_book_model.dart';
 import 'package:conveneapp/features/search/view/search.dart';
+import 'package:conveneapp/features/user_settings/view/user_settings_page.dart';
 import 'package:conveneapp/theme/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,7 +33,8 @@ class Dashboard extends ConsumerWidget {
             padding: const EdgeInsets.only(top: 15),
             child: Builder(
               builder: (context) {
-                final displayName = ref.watch(currentUserController).asData?.value.name ?? '';
+                final displayName = ref.watch(userInfoController).asData?.value.name ?? '';
+
                 if (displayName == "") {
                   return const Text(
                     'Welcome',
@@ -60,6 +61,7 @@ class Dashboard extends ConsumerWidget {
           actions: [
             Builder(
               builder: (context) {
+                String? profilePic = ref.watch(userInfoController).asData?.value.profilePic;
                 return GestureDetector(
                   key: const Key('dashBoard-openDrawer'),
                   onTap: () {
@@ -69,15 +71,15 @@ class Dashboard extends ConsumerWidget {
                     padding: const EdgeInsets.only(right: 10, top: 15),
                     child: CircleAvatar(
                       backgroundColor: Palette.niceBlack,
+                      backgroundImage: profilePic != null && profilePic.isNotEmpty ? NetworkImage(profilePic) : null,
                       radius: 24,
                       child: Builder(
                         builder: (context) {
-                          final userName = ref.watch(currentUserController).asData?.value.name;
-                          if (userName != null) {
+                          final userName = ref.watch(userInfoController).asData?.value.name;
+                          if (userName != null && profilePic != null && profilePic.isEmpty) {
                             return Text(userName.substring(0, 1));
                           }
-
-                          return const Icon(Icons.settings);
+                          return const SizedBox();
                         },
                       ),
                     ),
@@ -105,6 +107,14 @@ class Dashboard extends ConsumerWidget {
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, HistoryPage.route());
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, UserSettingsPage.route());
               },
             ),
             ListTile(

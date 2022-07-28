@@ -10,7 +10,13 @@ final userInfoController = StreamProvider<UserInfo>((ref) {
     return userApi.getUser(uid: uid);
   } else {
     return Stream.value(
-      const UserInfo(uid: '', email: "error", name: "error", showTutorial: true),
+      const UserInfo(
+        uid: '',
+        email: "error",
+        name: "error",
+        showTutorial: true,
+        profilePic: '',
+      ),
     );
   }
 });
