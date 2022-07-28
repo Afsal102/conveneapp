@@ -12,3 +12,23 @@ class LoadingPage extends StatelessWidget {
     );
   }
 }
+
+void hideProgressDialog(BuildContext context) {
+  Navigator.pop(context);
+}
+
+void showProgressDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => const Center(
+      child: Padding(
+        padding: EdgeInsets.all(15.0),
+        child: CircularProgressIndicator(
+          strokeWidth: 3,
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+        ),
+      ),
+    ),
+  );
+}

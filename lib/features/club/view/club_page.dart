@@ -2,12 +2,15 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:conveneapp/apis/firebase/user.dart';
+import 'package:conveneapp/core/button.dart';
 import 'package:conveneapp/features/authentication/controller/auth_controller.dart';
 import 'package:conveneapp/features/authentication/model/user_info.dart';
 import 'package:conveneapp/features/club/controller/club_controller.dart';
 import 'package:conveneapp/features/club/model/club_book_model.dart';
 import 'package:conveneapp/features/club/model/club_model.dart';
 import 'package:conveneapp/features/club/view/club_book_card.dart';
+import 'package:conveneapp/features/club/view/club_info.dart';
+import 'package:conveneapp/features/club/view/club_settings.dart';
 import 'package:conveneapp/features/club/view/members_page.dart';
 import 'package:conveneapp/features/search/model/search_book_model.dart';
 import 'package:conveneapp/features/search/view/search.dart';
@@ -17,11 +20,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 class ClubPage extends ConsumerStatefulWidget {
-  final ClubModel club;
-  const ClubPage({Key? key, required this.club}) : super(key: key);
+  const ClubPage({Key? key}) : super(key: key);
 
   static MaterialPageRoute<dynamic> route(ClubModel club) => MaterialPageRoute(
-        builder: (context) => ClubPage(club: club),
+        builder: (context) => const ClubPage(),
       );
   @override
   _ClubState createState() => _ClubState();
@@ -33,7 +35,7 @@ class _ClubState extends ConsumerState<ClubPage> {
 
   @override
   void initState() {
-    _currentBook = widget.club.currentBook;
+    _currentBook = ref.read(currentlySelectedClub.state).state!.currentBook;
     _selectedDate = DateTime(
       _selectedDate.year,
       _selectedDate.month,
@@ -101,31 +103,57 @@ class _ClubState extends ConsumerState<ClubPage> {
 
   @override
   Widget build(BuildContext context) {
+    final _currentlySelectedClub = ref.watch(currentlySelectedClub);
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text(widget.club.name, style: const TextStyle(color: Palette.niceBlack)),
+        elevation: 4,
+        shadowColor: Palette.niceBlack.withOpacity(0.4),
+        title: Text(_currentlySelectedClub!.name, style: const TextStyle(color: Palette.niceBlack)),
         actions: [
           IconButton(
             onPressed: () async {
               List<UserInfo> members = [];
-              for (var member in widget.club.members) {
+              for (var member in _currentlySelectedClub.members) {
                 UserInfo user = await ref.watch(userApiProvider).getFutureUser(uid: member);
                 members.add(user);
               }
-              Navigator.push(context, MembersPage.route(widget.club, members));
+              Navigator.push(context, MembersPage.route(_currentlySelectedClub, members));
             },
             icon: const Icon(Icons.people),
           ),
         ],
       ),
-      body: Column(
+      body: ListView(
         children: [
-          if (_currentBook != null)
-            ClubBookCard(book: _currentBook!)
-          else
+          if (_currentBook != null) ...[
+            ClubInfoView(club: _currentlySelectedClub),
+            Theme(
+              data: Theme.of(context).copyWith(
+                dividerColor: Colors.transparent,
+              ),
+              child: ExpansionTile(
+                textColor: Colors.black,
+                iconColor: Colors.black,
+                collapsedIconColor: Colors.black,
+                collapsedTextColor: Colors.black,
+                initiallyExpanded: true,
+                title: const Text(
+                  "Currently Reading",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                expandedAlignment: Alignment.topLeft,
+                expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClubBookCard(book: _currentBook!),
+                ],
+              ),
+            ),
+          ] else
             Column(
               children: [
+                const SizedBox(height: 16),
                 const Text(
                   "Select time for next club meeting:",
                   style: TextStyle(fontWeight: FontWeight.bold),
@@ -166,7 +194,7 @@ class _ClubState extends ConsumerState<ClubPage> {
                               dueDate: Timestamp.fromDate(_selectedDate).seconds,
                             );
                             await ref.read(currentClubsController.notifier).addBook(
-                                  club: widget.club,
+                                  club: _currentlySelectedClub,
                                   book: clubBookToAdd,
                                 );
                             setState(() {
@@ -181,22 +209,36 @@ class _ClubState extends ConsumerState<ClubPage> {
                 ),
               ],
             ),
-          Center(
-            child: TextButton(
-              onPressed: () async {
-                final userId = ref.watch(currentUserController).asData?.value.uid;
-                await ref.read(currentClubsController.notifier).removeFromClub(
-                      club: widget.club,
-                      memberId: userId!,
-                    );
-                Navigator.pop(context);
-              },
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: MediumButton(
+                backgroundColor: Palette.niceGrey,
+                child: Text(
+                  "Edit Club",
+                  style: TextStyle(color: Palette.niceBlue),
+                ),
+                onPressed: () => Navigator.push(context, ClubSettingsView.route())),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: MediumButton(
+              backgroundColor: Palette.niceGrey,
               child: const Text(
                 "Leave Club",
                 style: TextStyle(color: Colors.redAccent),
               ),
+              onPressed: () async {
+                final userId = ref.watch(currentUserController).asData?.value.uid;
+                await ref.read(currentClubsController.notifier).removeFromClub(
+                      club: _currentlySelectedClub,
+                      memberId: userId!,
+                    );
+                Navigator.pop(context);
+              },
             ),
-          )
+          ),
         ],
       ),
     );

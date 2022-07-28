@@ -295,6 +295,8 @@ class _DashBoardBody extends ConsumerWidget {
                                 onTap: () async {
                                   ClubModel selectedClub =
                                       await ref.read(currentClubsController.notifier).getClub(clubId: clubs[index].id);
+
+                                  ref.read(currentlySelectedClub.state).update((state) => selectedClub);
                                   if (selectedClub.name != "error") {
                                     Navigator.push(context, ClubPage.route(selectedClub));
                                   }
@@ -395,6 +397,8 @@ class _DashBoardBody extends ConsumerWidget {
                               onTap: () async {
                                 ClubModel selectedClub =
                                     await ref.read(currentClubsController.notifier).getClub(clubId: clubs[index].id);
+
+                                ref.read(currentlySelectedClub.state).update((state) => selectedClub);
                                 if (selectedClub.name != "error") {
                                   Navigator.push(context, ClubPage.route(selectedClub));
                                 }
