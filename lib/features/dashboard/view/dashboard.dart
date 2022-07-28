@@ -2,7 +2,6 @@ import 'package:conveneapp/apis/firebase/auth.dart';
 import 'package:conveneapp/apis/firebase/user.dart';
 import 'package:conveneapp/core/button.dart';
 import 'package:conveneapp/core/info_button.dart';
-import 'package:conveneapp/features/authentication/controller/auth_controller.dart';
 import 'package:conveneapp/features/book/controller/book_controller.dart';
 import 'package:conveneapp/features/book/view/book_slidable.dart';
 import 'package:conveneapp/features/club/controller/club_controller.dart';
