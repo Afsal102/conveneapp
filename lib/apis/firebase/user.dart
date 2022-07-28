@@ -106,7 +106,10 @@ class UserApi {
           },
         );
       }
-      await firebaseStorage.ref().child('users').child(uid).delete();
+      var image = await firebaseStorage.ref().child('users').child(uid).getData();
+      if (image != null) {
+        await firebaseStorage.ref().child('users').child(uid).delete();
+      }
       return right(null);
     } on auth.FirebaseAuthException catch (e) {
       return left(AuthFailure(e.message!));

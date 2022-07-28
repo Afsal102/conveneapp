@@ -116,11 +116,16 @@ class AuthApiFirebase implements AuthApi {
   @override
   FutureEitherVoid deleteAccount() async {
     try {
-      await _userApi.deleteUser(_firebaseAuth.currentUser!.uid);
+      String uid = _firebaseAuth.currentUser!.uid;
       await _firebaseAuth.currentUser?.delete();
+      await _userApi.deleteUser(uid);
       return right(null);
-    } on AuthException catch (e) {
-      return left(AuthFailure(e.message));
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        signIn();
+        deleteAccount();
+      }
+      return left(AuthFailure(e.message!));
     }
   }
 
