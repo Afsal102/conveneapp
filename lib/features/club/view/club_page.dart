@@ -151,6 +151,7 @@ class _ClubState extends ConsumerState<ClubPage> {
           ] else
             Column(
               children: [
+                ClubInfoView(club: _currentlySelectedClub),
                 const SizedBox(height: 16),
                 const Text(
                   "Select time for next club meeting:",
