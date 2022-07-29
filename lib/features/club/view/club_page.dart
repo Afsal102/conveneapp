@@ -108,8 +108,6 @@ class _ClubState extends ConsumerState<ClubPage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        elevation: 4,
-        shadowColor: Palette.niceBlack.withOpacity(0.4),
         title: Text(_currentlySelectedClub!.name, style: const TextStyle(color: Palette.niceBlack)),
         actions: [
           IconButton(
@@ -213,7 +211,8 @@ class _ClubState extends ConsumerState<ClubPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: MediumButton(
-                backgroundColor: Palette.niceGrey,
+                elevation: 0,
+                backgroundColor: Colors.blue.shade50,
                 child: Text(
                   "Edit Club",
                   style: TextStyle(color: Palette.niceBlue),
@@ -224,7 +223,8 @@ class _ClubState extends ConsumerState<ClubPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: MediumButton(
-              backgroundColor: Palette.niceGrey,
+              elevation: 0,
+              backgroundColor: Colors.red.shade50,
               child: const Text(
                 "Leave Club",
                 style: TextStyle(color: Colors.redAccent),

@@ -5,8 +5,10 @@ class BigButton extends StatelessWidget {
   final Widget child;
   final VoidCallback? onPressed;
   final Color? backgroundColor;
+  final double? elevation;
 
-  const BigButton({Key? key, required this.child, required this.onPressed, this.backgroundColor}) : super(key: key);
+  const BigButton({Key? key, required this.child, required this.onPressed, this.backgroundColor, this.elevation})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +23,7 @@ class BigButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
         ),
-        elevation: MaterialStateProperty.all(10),
+        elevation: MaterialStateProperty.all(elevation ?? 10),
       ),
       child: child,
     );
@@ -32,8 +34,9 @@ class MediumButton extends StatelessWidget {
   final Widget child;
   final VoidCallback? onPressed;
   final Color? backgroundColor;
-
-  const MediumButton({Key? key, required this.child, required this.onPressed, this.backgroundColor}) : super(key: key);
+  final double? elevation;
+  const MediumButton({Key? key, required this.child, required this.onPressed, this.backgroundColor, this.elevation})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +51,7 @@ class MediumButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
         ),
-        elevation: MaterialStateProperty.all(10),
+        elevation: MaterialStateProperty.all(elevation ?? 10),
       ),
       child: child,
     );

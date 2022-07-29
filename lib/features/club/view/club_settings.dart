@@ -92,8 +92,6 @@ class _ClubSettingsViewState extends ConsumerState<ClubSettingsView> {
       child: Scaffold(
         appBar: AppBar(
             centerTitle: true,
-            elevation: 4,
-            shadowColor: Palette.niceBlack.withOpacity(0.4),
             title: Text(
               "Edit ${_currentlySelectedClub!.name}",
               style: const TextStyle(color: Palette.niceBlack),
