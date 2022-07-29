@@ -44,6 +44,7 @@ dependencies:
   firebaseapis: ^0.1.2
   firebase_dynamic_links: ^4.3.3
   share_plus: ^4.0.10
+  package_info_plus: ^1.4.3
 
 dev_dependencies:
   mocktail_image_network: ^0.2.0
