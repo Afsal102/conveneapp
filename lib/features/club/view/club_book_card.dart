@@ -10,7 +10,9 @@ class ClubBookCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8),
+      margin: const EdgeInsets.symmetric(
+        horizontal: 10.0,
+      ),
       padding: const EdgeInsets.all(10.0),
       decoration:
           BoxDecoration(color: Theme.of(context).cardColor, borderRadius: const BorderRadius.all(Radius.circular(20))),

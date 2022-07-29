@@ -12,6 +12,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 part 'club_state.dart';
 
+final currentlySelectedClub = StateProvider<ClubModel?>((ref) {
+  return null;
+});
+
 final currentClubsController =
     AutoDisposeStateNotifierProvider<CurrentClubList, AsyncValue<CurrentClubListState>>((ref) {
   return CurrentClubList(clubApi: ref.watch(clubApiProvider));
