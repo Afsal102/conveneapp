@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:conveneapp/apis/firebase/firebase_api_providers.dart';
 import 'package:conveneapp/core/constants/constants.dart';
@@ -9,11 +11,13 @@ import 'package:conveneapp/features/club/model/club_model.dart';
 import 'package:conveneapp/features/club/model/personal_club_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final clubApiProvider = Provider<ClubApi>((ref) => ClubApiFirebase(
     firebaseFirestore: ref.watch(firebaseFirestoreProvider), firebaseAuth: ref.watch(firebaseAuthProvider)));
+final FirebaseStorage firebaseStorage = FirebaseStorage.instance;
 
 /// - all the transactions must be pointed to the current user's reference
 abstract class ClubApi {
@@ -40,6 +44,9 @@ abstract class ClubApi {
 
   FutureEitherVoid removeFromClub(ClubModel club, String memberId);
 
+  FutureEitherVoid updateClubInfo({required String clubId, String? description, String? coverImageUrl});
+
+  Future<String?> uploadClubImage({required String clubId, File? coverImage, String? currentCoverImage});
   // /// - returns all the history books for the current user
   // Future<Either<Failure, List<BookModel>>> getHistoryBooks();
 }
@@ -71,6 +78,41 @@ class ClubApiFirebase implements ClubApi {
       return left(ClubFailure.fromCode(e.code));
     } on Exception catch (_) {
       return left(ClubFailure());
+    }
+  }
+
+  @override
+  FutureEitherVoid updateClubInfo({
+    required String clubId,
+    String? description,
+    String? coverImageUrl,
+  }) async {
+    try {
+      await _clubsReference
+          .doc(clubId)
+          .set({"description": description, "coverImage": coverImageUrl}, SetOptions(merge: true));
+
+      return right(Future<void>.value());
+    } on FirebaseException catch (e) {
+      return left(ClubFailure.fromCode(e.code));
+    } on Exception catch (_) {
+      return left(ClubFailure());
+    }
+  }
+
+  @override
+  Future<String?> uploadClubImage({
+    required String clubId,
+    File? coverImage,
+    String? currentCoverImage,
+  }) async {
+    if (coverImage != null) {
+      Reference ref = firebaseStorage.ref().child('club').child(clubId);
+      UploadTask uploadTask = ref.putFile(coverImage);
+      TaskSnapshot snap = await uploadTask;
+      return await snap.ref.getDownloadURL();
+    } else {
+      return null;
     }
   }
 

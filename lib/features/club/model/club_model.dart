@@ -7,11 +7,15 @@ class ClubModel extends Equatable {
   final String name;
   final List<String> members;
   final ClubBookModel? currentBook;
+  final String? coverImage;
+  final String? description;
 
   const ClubModel({
     this.id = '',
     required this.name,
     required this.members,
+    this.description,
+    this.coverImage,
     this.currentBook,
   });
 
@@ -20,12 +24,16 @@ class ClubModel extends Equatable {
     String? name,
     List<String>? members,
     ClubBookModel? currentBook,
+    String? coverImage,
+    String? description,
   }) {
     return ClubModel(
       id: id ?? this.id,
       name: name ?? this.name,
       members: members ?? this.members,
       currentBook: currentBook ?? this.currentBook,
+      coverImage: coverImage ?? this.coverImage,
+      description: description ?? this.description,
     );
   }
 
@@ -34,6 +42,8 @@ class ClubModel extends Equatable {
       'name': name,
       'members': members,
       'currentBook': currentBook?.toMap(),
+      'coverImage': coverImage,
+      'description': description,
     };
   }
 
@@ -42,6 +52,8 @@ class ClubModel extends Equatable {
       name: map['name'],
       members: List<String>.from(map['members']),
       currentBook: map['currentBook'] != null ? ClubBookModel.fromMap(map['currentBook']) : null,
+      coverImage: map['coverImage'] as String?,
+      description: map['description'] as String?,
     );
   }
 
@@ -52,6 +64,8 @@ class ClubModel extends Equatable {
       name,
       members,
       currentBook,
+      coverImage,
+      description,
     ];
   }
 }

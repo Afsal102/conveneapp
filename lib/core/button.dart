@@ -4,22 +4,54 @@ import 'package:flutter/material.dart';
 class BigButton extends StatelessWidget {
   final Widget child;
   final VoidCallback? onPressed;
+  final Color? backgroundColor;
+  final double? elevation;
 
-  const BigButton({Key? key, required this.child, required this.onPressed}) : super(key: key);
+  const BigButton({Key? key, required this.child, required this.onPressed, this.backgroundColor, this.elevation})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: onPressed,
       style: ButtonStyle(
+        shadowColor: MaterialStateProperty.all(Palette.niceBlack.withOpacity(0.4)),
         minimumSize: MaterialStateProperty.all(const Size(300, 60)),
-        backgroundColor: MaterialStateProperty.all(Palette.niceBlack),
+        backgroundColor: MaterialStateProperty.all(backgroundColor ?? Palette.niceBlack),
         shape: MaterialStateProperty.all(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
         ),
-        elevation: MaterialStateProperty.all(10),
+        elevation: MaterialStateProperty.all(elevation ?? 10),
+      ),
+      child: child,
+    );
+  }
+}
+
+class MediumButton extends StatelessWidget {
+  final Widget child;
+  final VoidCallback? onPressed;
+  final Color? backgroundColor;
+  final double? elevation;
+  const MediumButton({Key? key, required this.child, required this.onPressed, this.backgroundColor, this.elevation})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ButtonStyle(
+        shadowColor: MaterialStateProperty.all(Palette.niceBlack.withOpacity(0.4)),
+        minimumSize: MaterialStateProperty.all(const Size(250, 45)),
+        backgroundColor: MaterialStateProperty.all(backgroundColor ?? Palette.niceBlack),
+        shape: MaterialStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        elevation: MaterialStateProperty.all(elevation ?? 10),
       ),
       child: child,
     );
