@@ -115,6 +115,126 @@ class SearchView extends StatelessWidget {
     required this.search,
   }) : super(key: key);
 
+  Future<String?> updateDialog(BuildContext context, SearchBookModel book) {
+    TextEditingController title = TextEditingController(text: book.title.toString());
+    TextEditingController authors = TextEditingController(text: book.authors[0].toString());
+    TextEditingController totalPageCount = TextEditingController(text: book.pageCount.toString());
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirm Book Information'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: title,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  isDense: true,
+                  border: const OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    borderSide: const BorderSide(
+                      color: Colors.black,
+                    ),
+                  ),
+                  alignLabelWithHint: true,
+                  labelStyle: const TextStyle(color: Palette.niceBlack),
+                  labelText: "Title",
+                ),
+                style: const TextStyle(decorationColor: Palette.niceDarkGrey),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              TextFormField(
+                controller: authors,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  isDense: true,
+                  border: const OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    borderSide: const BorderSide(
+                      color: Colors.black,
+                    ),
+                  ),
+                  alignLabelWithHint: true,
+                  labelStyle: const TextStyle(color: Palette.niceBlack),
+                  labelText: "Author",
+                ),
+                style: const TextStyle(decorationColor: Palette.niceDarkGrey),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              TextFormField(
+                controller: totalPageCount,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  isDense: true,
+                  border: const OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    borderSide: const BorderSide(
+                      color: Colors.black,
+                    ),
+                  ),
+                  alignLabelWithHint: true,
+                  labelStyle: const TextStyle(color: Palette.niceBlack),
+                  labelText: "Page Count",
+                ),
+                style: const TextStyle(decorationColor: Palette.niceDarkGrey),
+              )
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                if (totalPageCount.text.trim() == "0") {
+                  Navigator.of(context).pop(book.copyWith(
+                    pageCount: 100,
+                    authors: [authors.text.trim()],
+                    title: title.text.trim(),
+                  ));
+                } else {
+                  Navigator.of(context).pop(book.copyWith(
+                    pageCount: int.parse(
+                      totalPageCount.text.trim(),
+                    ),
+                    authors: [authors.text.trim()],
+                    title: title.text.trim(),
+                  ));
+                }
+              },
+              child: Text(
+                'Add to Reading List',
+                style: TextStyle(color: Palette.niceGreen),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(null);
+              },
+              child: const Text(
+                'Back',
+                style: TextStyle(color: Palette.niceBlack),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -128,7 +248,7 @@ class SearchView extends StatelessWidget {
                 itemBuilder: (context, count) {
                   return GestureDetector(
                     onTap: () {
-                      Navigator.pop(context, booklist.data![count]);
+                      updateDialog(context, booklist.data![count]);
                     },
                     child: SearchBookCard(book: booklist.data![count]),
                   );
