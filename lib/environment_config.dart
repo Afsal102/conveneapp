@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:conveneapp/config_reader.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -39,6 +40,11 @@ Future<void> setUpMain(String env) async {
     FirebaseFirestore.instance.useFirestoreEmulator(
       configReader.getIp,
       configReader.firestorePort,
+    );
+
+    await FirebaseStorage.instance.useStorageEmulator(
+      configReader.getIp,
+      configReader.firebaseStoragePort,
     );
   }
 }
