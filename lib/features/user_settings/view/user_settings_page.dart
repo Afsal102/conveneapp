@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:conveneapp/apis/firebase/auth.dart';
 import 'package:conveneapp/apis/firebase/user.dart';
 import 'package:conveneapp/core/button.dart';
 import 'package:conveneapp/core/utility/utils.dart';
@@ -38,6 +39,12 @@ class _UserSettingsViewState extends ConsumerState<UserSettingsView> {
   File? _image;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    nameController.text = ref.watch(currentUserController).asData?.value.name ?? "";
+  }
+
+  @override
   void dispose() {
     super.dispose();
     nameController.dispose();
@@ -62,6 +69,40 @@ class _UserSettingsViewState extends ConsumerState<UserSettingsView> {
           currentProfilePic: currentProfilePic,
         );
     Navigator.pop(context);
+  }
+
+  Future<bool?> deleteDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete User Profile'),
+          content: const Text('Are you sure you want to delete this user?'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                Navigator.pop(context);
+                await ref.read(authApiProvider).deleteAccount();
+              },
+              child: Text(
+                'Yes',
+                style: TextStyle(color: Palette.niceRed),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text(
+                'No',
+                style: TextStyle(color: Palette.niceBlack),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -120,12 +161,34 @@ class _UserSettingsViewState extends ConsumerState<UserSettingsView> {
             ),
             const SizedBox(height: 20),
             BigButton(
-              child: const Text('Edit'),
+              child: const Text('Save'),
               onPressed: () => editProfile(
                 uid,
                 nameController.text.trim().isEmpty ? displayName : nameController.text.trim(),
                 profilePic,
               ),
+            ),
+            const SizedBox(height: 20),
+            TextButton(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(
+                    Icons.delete_outline,
+                    color: Colors.red,
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text(
+                    'Delete Account',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ],
+              ),
+              onPressed: () {
+                deleteDialog(context);
+              },
             ),
           ],
         ),
