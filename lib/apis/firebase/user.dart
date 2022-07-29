@@ -18,12 +18,13 @@ final userApiProvider = Provider<UserApi>((ref) {
 });
 
 class UserApi {
-  FirebaseFirestore firestore;
-  FirebaseStorage firebaseStorage;
+  final FirebaseFirestore _firestore;
+  final FirebaseStorage _firebaseStorage;
   UserApi({
-    required this.firestore,
-    required this.firebaseStorage,
-  });
+    required FirebaseFirestore firestore,
+    required FirebaseStorage firebaseStorage,
+  })  : _firebaseStorage = firebaseStorage,
+        _firestore = firestore;
 
   Stream<UserInfo> getUser({required String uid}) {
     Stream<DocumentSnapshot> docSnapshot = _users.doc(uid).snapshots();
@@ -75,7 +76,7 @@ class UserApi {
     String profilePicUrl = currentProfilePic;
     try {
       if (profilePic != null) {
-        Reference ref = firebaseStorage.ref().child('users').child(uid);
+        Reference ref = _firebaseStorage.ref().child('users').child(uid);
         UploadTask uploadTask = ref.putFile(profilePic);
         TaskSnapshot snap = await uploadTask;
         profilePicUrl = await snap.ref.getDownloadURL();
@@ -115,9 +116,9 @@ class UserApi {
           },
         );
       }
-      var image = await firebaseStorage.ref().child('users').child(uid).getData();
+      var image = await _firebaseStorage.ref().child('users').child(uid).getData();
       if (image != null) {
-        await firebaseStorage.ref().child('users').child(uid).delete();
+        await _firebaseStorage.ref().child('users').child(uid).delete();
       }
       return right(null);
     } on auth.FirebaseAuthException catch (e) {
@@ -128,10 +129,10 @@ class UserApi {
   }
 
   CollectionReference get _users {
-    return firestore.collection(FirebaseConstants.usersCollection);
+    return _firestore.collection(FirebaseConstants.usersCollection);
   }
 
   CollectionReference get _clubsCollection {
-    return firestore.collection(FirebaseConstants.clubsCollection);
+    return _firestore.collection(FirebaseConstants.clubsCollection);
   }
 }
