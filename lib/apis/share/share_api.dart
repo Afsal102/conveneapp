@@ -5,6 +5,7 @@ import 'package:dartz/dartz.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 
 final shareApiProvider = Provider<ShareApi>(
@@ -28,14 +29,15 @@ class ShareApi {
     String? imageUrl,
   }) async {
     try {
+      final packageInfo = await PackageInfo.fromPlatform();
+
       final dynamicLinkParams = DynamicLinkParameters(
         link: Uri.parse(
           ApiConstants.deeplinkDataDomainUri + '/convene?clubId=$clubId',
         ),
         uriPrefix: ApiConstants.deeplinkDomainUri,
-        androidParameters: const AndroidParameters(
-          //TODO(afzal): get package id from build.gradle file autmoatically
-          packageName: 'com.convene.conveneapp',
+        androidParameters: AndroidParameters(
+          packageName: packageInfo.packageName,
         ),
         socialMetaTagParameters: SocialMetaTagParameters(
           title: clubTitle,
