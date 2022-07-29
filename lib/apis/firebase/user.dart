@@ -1,23 +1,33 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:conveneapp/core/constants/firebase_constants.dart';
-import 'package:conveneapp/core/errors/failures.dart';
-import 'package:conveneapp/core/type_defs/type_defs.dart';
-import 'package:conveneapp/features/authentication/model/user_info.dart';
+import 'package:conveneapp/apis/firebase/firebase_api_providers.dart';
 import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:conveneapp/core/constants/firebase_constants.dart';
+import 'package:conveneapp/core/errors/failures.dart';
+import 'package:conveneapp/core/type_defs/type_defs.dart';
+import 'package:conveneapp/features/authentication/model/user_info.dart';
 
-final userApiProvider = Provider<UserApi>((ref) => UserApi());
-
-final CollectionReference users = FirebaseFirestore.instance.collection(FirebaseConstants.usersCollection);
-final CollectionReference clubsCollection = FirebaseFirestore.instance.collection(FirebaseConstants.clubsCollection);
-final FirebaseStorage firebaseStorage = FirebaseStorage.instance;
+final userApiProvider = Provider<UserApi>((ref) {
+  return UserApi(
+    firestore: ref.watch(firebaseFirestoreProvider),
+    firebaseStorage: ref.watch(firebaseStorageProvider),
+  );
+});
 
 class UserApi {
+  final FirebaseFirestore _firestore;
+  final FirebaseStorage _firebaseStorage;
+  UserApi({
+    required FirebaseFirestore firestore,
+    required FirebaseStorage firebaseStorage,
+  })  : _firebaseStorage = firebaseStorage,
+        _firestore = firestore;
+
   Stream<UserInfo> getUser({required String uid}) {
-    Stream<DocumentSnapshot> docSnapshot = users.doc(uid).snapshots();
+    Stream<DocumentSnapshot> docSnapshot = _users.doc(uid).snapshots();
     return docSnapshot.map<UserInfo>(
       (user) => UserInfo(
         uid: user.id,
@@ -30,7 +40,7 @@ class UserApi {
   }
 
   Future<UserInfo> getFutureUser({required String uid}) async {
-    DocumentSnapshot docSnapshot = await users.doc(uid).get();
+    DocumentSnapshot docSnapshot = await _users.doc(uid).get();
     return UserInfo(
       uid: docSnapshot.id,
       email: (docSnapshot.data() as dynamic)["email"] ?? "no email",
@@ -41,10 +51,10 @@ class UserApi {
   }
 
   Future<void> addUser({required String uid, String? email, String? name}) async {
-    DocumentSnapshot documentSnapshot = await users.doc(uid).get();
+    DocumentSnapshot documentSnapshot = await _users.doc(uid).get();
 
     if (documentSnapshot.exists) return;
-    await users.doc(uid).set({
+    await _users.doc(uid).set({
       'email': email ?? FieldValue.delete(),
       'name': name ?? FieldValue.delete(),
       'showTutorial': true,
@@ -52,7 +62,7 @@ class UserApi {
   }
 
   Future<void> removeTutorial({required String uid}) async {
-    await users.doc(uid).update({
+    await _users.doc(uid).update({
       'showTutorial': false,
     });
   }
@@ -66,12 +76,12 @@ class UserApi {
     String profilePicUrl = currentProfilePic;
     try {
       if (profilePic != null) {
-        Reference ref = firebaseStorage.ref().child('users').child(uid);
+        Reference ref = _firebaseStorage.ref().child('users').child(uid);
         UploadTask uploadTask = ref.putFile(profilePic);
         TaskSnapshot snap = await uploadTask;
         profilePicUrl = await snap.ref.getDownloadURL();
       }
-      await users.doc(uid).update(
+      await _users.doc(uid).update(
         {
           'name': name,
           'profilePic': profilePicUrl,
@@ -86,29 +96,29 @@ class UserApi {
   FutureEitherVoid deleteUser(String uid) async {
     try {
       List<String> usersClubId = [];
-      var currentClubsDocs = await users.doc(uid).collection(FirebaseConstants.currentClubsCollection).get();
+      var currentClubsDocs = await _users.doc(uid).collection(FirebaseConstants.currentClubsCollection).get();
       for (var club in currentClubsDocs.docs) {
         usersClubId.add(club.id);
         await club.reference.delete();
       }
 
-      var finishedBooksDocs = await users.doc(uid).collection(FirebaseConstants.finishedBooksCollection).get();
+      var finishedBooksDocs = await _users.doc(uid).collection(FirebaseConstants.finishedBooksCollection).get();
       for (var finishedBook in finishedBooksDocs.docs) {
         await finishedBook.reference.delete();
       }
 
-      await users.doc(uid).delete();
+      await _users.doc(uid).delete();
 
       for (var clubId in usersClubId) {
-        await clubsCollection.doc(clubId).update(
+        await _clubsCollection.doc(clubId).update(
           {
             'members': FieldValue.arrayRemove([uid]),
           },
         );
       }
-      var image = await firebaseStorage.ref().child('users').child(uid).getData();
+      var image = await _firebaseStorage.ref().child('users').child(uid).getData();
       if (image != null) {
-        await firebaseStorage.ref().child('users').child(uid).delete();
+        await _firebaseStorage.ref().child('users').child(uid).delete();
       }
       return right(null);
     } on auth.FirebaseAuthException catch (e) {
@@ -116,5 +126,13 @@ class UserApi {
     } catch (e) {
       return left(StorageFailure('Some Internal Error Occurred, Please Try Again.'));
     }
+  }
+
+  CollectionReference get _users {
+    return _firestore.collection(FirebaseConstants.usersCollection);
+  }
+
+  CollectionReference get _clubsCollection {
+    return _firestore.collection(FirebaseConstants.clubsCollection);
   }
 }

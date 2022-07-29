@@ -15,9 +15,13 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final clubApiProvider = Provider<ClubApi>((ref) => ClubApiFirebase(
-    firebaseFirestore: ref.watch(firebaseFirestoreProvider), firebaseAuth: ref.watch(firebaseAuthProvider)));
-final FirebaseStorage firebaseStorage = FirebaseStorage.instance;
+final clubApiProvider = Provider<ClubApi>(
+  (ref) => ClubApiFirebase(
+    firebaseFirestore: ref.watch(firebaseFirestoreProvider),
+    firebaseAuth: ref.watch(firebaseAuthProvider),
+    firebaseStorage: ref.watch(firebaseStorageProvider),
+  ),
+);
 
 /// - all the transactions must be pointed to the current user's reference
 abstract class ClubApi {
@@ -55,11 +59,14 @@ abstract class ClubApi {
 class ClubApiFirebase implements ClubApi {
   final FirebaseFirestore _firebaseFirestore;
   final FirebaseAuth _firebaseAuth;
+  final FirebaseStorage _firebaseStorage;
   ClubApiFirebase({
     required FirebaseFirestore firebaseFirestore,
     required FirebaseAuth firebaseAuth,
+    required FirebaseStorage firebaseStorage,
   })  : _firebaseAuth = firebaseAuth,
-        _firebaseFirestore = firebaseFirestore;
+        _firebaseFirestore = firebaseFirestore,
+        _firebaseStorage = firebaseStorage;
 
   /// 2 Club Databases:
   /// - `_clubsReference`: stores all the clubs in the app
@@ -107,7 +114,7 @@ class ClubApiFirebase implements ClubApi {
     String? currentCoverImage,
   }) async {
     if (coverImage != null) {
-      Reference ref = firebaseStorage.ref().child('club').child(clubId);
+      Reference ref = _firebaseStorage.ref().child('club').child(clubId);
       UploadTask uploadTask = ref.putFile(coverImage);
       TaskSnapshot snap = await uploadTask;
       return await snap.ref.getDownloadURL();
