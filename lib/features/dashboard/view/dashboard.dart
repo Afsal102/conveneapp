@@ -118,13 +118,6 @@ class Dashboard extends ConsumerWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete_outline),
-              title: const Text('Delete Account'),
-              onTap: () async {
-                await ref.read(authApiProvider).deleteAccount();
-              },
-            ),
-            ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Logout'),
               onTap: () async {
