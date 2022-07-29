@@ -43,6 +43,7 @@ abstract class AuthApi {
   /// - SignIn with apple
   FutureEitherVoid signInWithApple();
   FutureEitherVoid signOut();
+  FutureEitherVoid deleteAccount();
 }
 
 /// - Implementations for `AuthApi`
@@ -109,6 +110,22 @@ class AuthApiFirebase implements AuthApi {
       return right(null);
     } on Exception catch (_) {
       return left(AuthFailure(signOutExceptionMessage));
+    }
+  }
+
+  @override
+  FutureEitherVoid deleteAccount() async {
+    try {
+      String uid = _firebaseAuth.currentUser!.uid;
+      await _firebaseAuth.currentUser?.delete();
+      await _userApi.deleteUser(uid);
+      return right(null);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        signIn();
+        deleteAccount();
+      }
+      return left(AuthFailure(e.message!));
     }
   }
 
