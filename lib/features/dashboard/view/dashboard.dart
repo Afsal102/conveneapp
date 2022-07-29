@@ -1,11 +1,15 @@
+import 'dart:developer';
+
 import 'package:conveneapp/apis/firebase/auth.dart';
 import 'package:conveneapp/apis/firebase/user.dart';
+import 'package:conveneapp/apis/share/share_api.dart';
 import 'package:conveneapp/core/button.dart';
 import 'package:conveneapp/core/info_button.dart';
 import 'package:conveneapp/features/book/controller/book_controller.dart';
 import 'package:conveneapp/features/book/view/book_slidable.dart';
 import 'package:conveneapp/features/club/controller/club_controller.dart';
 import 'package:conveneapp/features/club/model/club_model.dart';
+import 'package:conveneapp/features/club/model/personal_club_model.dart';
 import 'package:conveneapp/features/club/view/club_card.dart';
 import 'package:conveneapp/features/club/view/club_page.dart';
 import 'package:conveneapp/features/create_club/view/create_club_page.dart';
@@ -33,7 +37,8 @@ class Dashboard extends ConsumerWidget {
             padding: const EdgeInsets.only(top: 15),
             child: Builder(
               builder: (context) {
-                final displayName = ref.watch(userInfoController).asData?.value.name ?? '';
+                final displayName =
+                    ref.watch(userInfoController).asData?.value.name ?? '';
 
                 if (displayName == "") {
                   return const Text(
@@ -61,7 +66,8 @@ class Dashboard extends ConsumerWidget {
           actions: [
             Builder(
               builder: (context) {
-                String? profilePic = ref.watch(userInfoController).asData?.value.profilePic;
+                String? profilePic =
+                    ref.watch(userInfoController).asData?.value.profilePic;
                 return GestureDetector(
                   key: const Key('dashBoard-openDrawer'),
                   onTap: () {
@@ -71,12 +77,18 @@ class Dashboard extends ConsumerWidget {
                     padding: const EdgeInsets.only(right: 10, top: 15),
                     child: CircleAvatar(
                       backgroundColor: Palette.niceBlack,
-                      backgroundImage: profilePic != null && profilePic.isNotEmpty ? NetworkImage(profilePic) : null,
+                      backgroundImage:
+                          profilePic != null && profilePic.isNotEmpty
+                              ? NetworkImage(profilePic)
+                              : null,
                       radius: 24,
                       child: Builder(
                         builder: (context) {
-                          final userName = ref.watch(userInfoController).asData?.value.name;
-                          if (userName != null && profilePic != null && profilePic.isEmpty) {
+                          final userName =
+                              ref.watch(userInfoController).asData?.value.name;
+                          if (userName != null &&
+                              profilePic != null &&
+                              profilePic.isEmpty) {
                             return Text(userName.substring(0, 1));
                           }
                           return const SizedBox();
@@ -154,10 +166,12 @@ class Dashboard extends ConsumerWidget {
               InfoButton(
                 action: 'Add Personal Book',
                 key: const Key('dashBoard-addPersonalBook'),
-                info: 'Add a personal book to your dashboard, so you can track your reading',
+                info:
+                    'Add a personal book to your dashboard, so you can track your reading',
                 onPressed: () async {
                   Navigator.pop(context);
-                  final bookToAdd = await Navigator.push(context, SearchPage.route());
+                  final bookToAdd =
+                      await Navigator.push(context, SearchPage.route());
                   if (bookToAdd is SearchBookModel) {
                     await ref.read(currentBooksController.notifier).addBook(
                           book: bookToAdd,
@@ -168,7 +182,8 @@ class Dashboard extends ConsumerWidget {
               const SizedBox(height: 10),
               InfoButton(
                 action: 'Create a Club',
-                info: 'By creating a club, you can invite friends to read together',
+                info:
+                    'By creating a club, you can invite friends to read together',
                 onPressed: () async {
                   Navigator.pop(context);
                   await Navigator.push(context, CreateClubPage.route());
@@ -177,7 +192,8 @@ class Dashboard extends ConsumerWidget {
               const SizedBox(height: 10),
               InfoButton(
                 action: 'Join a Club',
-                info: 'By joining a club, you can read books together with your friends',
+                info:
+                    'By joining a club, you can read books together with your friends',
                 onPressed: () async {
                   Navigator.pop(context);
                   await Navigator.push(context, JoinClubPage.route());
@@ -197,7 +213,8 @@ class _DashBoardBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen<AsyncValue<CurrentBookListState>>(currentBooksController, (previous, next) {
+    ref.listen<AsyncValue<CurrentBookListState>>(currentBooksController,
+        (previous, next) {
       next.mapOrNull(
         data: (data) {
           final state = data.value;
@@ -214,7 +231,8 @@ class _DashBoardBody extends ConsumerWidget {
         },
       );
     });
-    ref.listen<AsyncValue<CurrentClubListState>>(currentClubsController, (previous, next) {
+    ref.listen<AsyncValue<CurrentClubListState>>(currentClubsController,
+        (previous, next) {
       next.mapOrNull(
         data: (data) {
           final state = data.value;
@@ -256,7 +274,8 @@ class _DashBoardBody extends ConsumerWidget {
               children: [
                 Center(
                   child: Image(
-                    image: const AssetImage("assets/defaultstates/empty dashboard.png"),
+                    image: const AssetImage(
+                        "assets/defaultstates/empty dashboard.png"),
                     height: (MediaQuery.of(context).size.height * 0.3),
                   ),
                 ),
@@ -274,7 +293,8 @@ class _DashBoardBody extends ConsumerWidget {
                   delegate: SliverChildListDelegate(
                     [
                       const Padding(
-                        padding: EdgeInsets.only(top: 15, bottom: 5, left: 15, right: 20),
+                        padding: EdgeInsets.only(
+                            top: 15, bottom: 5, left: 15, right: 20),
                         child: Text(
                           'Your current clubs',
                           style: TextStyle(color: Colors.black, fontSize: 18),
@@ -288,17 +308,35 @@ class _DashBoardBody extends ConsumerWidget {
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemBuilder: (BuildContext context, index) {
+                              final club = clubs[index];
                               return GestureDetector(
                                 child: ClubCard(
-                                  club: clubs[index],
+                                  onShareTap: () async {
+                                    final _club = await _getClub(ref, club);
+
+                                    await ref.read(shareApiProvider).shareClub(
+                                          clubId: _club.id,
+                                          clubTitle: _club.name,
+                                          clubDescription: _club.description,
+                                        );
+                                  },
+                                  club: club,
                                 ),
                                 onTap: () async {
-                                  ClubModel selectedClub =
-                                      await ref.read(currentClubsController.notifier).getClub(clubId: clubs[index].id);
+                                  final selectedClub =
+                                      await _getClub(ref, club);
 
-                                  ref.read(currentlySelectedClub.state).update((state) => selectedClub);
+                                  ref
+                                      .read(currentlySelectedClub.state)
+                                      .update((state) => selectedClub);
+
                                   if (selectedClub.name != "error") {
-                                    Navigator.push(context, ClubPage.route(selectedClub));
+                                    Navigator.push(
+                                      context,
+                                      ClubPage.route(
+                                        selectedClub,
+                                      ),
+                                    );
                                   }
                                 },
                               );
@@ -322,11 +360,14 @@ class _DashBoardBody extends ConsumerWidget {
                       data: (user) {
                         if (user.showTutorial) {
                           return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 10.0, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 4),
                             decoration: BoxDecoration(
                                 color: Theme.of(context).cardColor,
-                                borderRadius: const BorderRadius.all(Radius.circular(20))),
+                                borderRadius: const BorderRadius.all(
+                                    Radius.circular(20))),
                             child: Row(
                               children: [
                                 const Text(
@@ -339,7 +380,9 @@ class _DashBoardBody extends ConsumerWidget {
                                 const Spacer(),
                                 IconButton(
                                   onPressed: () {
-                                    ref.read(userApiProvider).removeTutorial(uid: user.uid);
+                                    ref
+                                        .read(userApiProvider)
+                                        .removeTutorial(uid: user.uid);
                                   },
                                   icon: const Icon(Icons.close),
                                 )
@@ -355,7 +398,8 @@ class _DashBoardBody extends ConsumerWidget {
                       },
                     ),
                     const Padding(
-                      padding: EdgeInsets.only(top: 15, bottom: 5, left: 15, right: 20),
+                      padding: EdgeInsets.only(
+                          top: 15, bottom: 5, left: 15, right: 20),
                       child: Text(
                         'You are currently reading',
                         style: TextStyle(color: Colors.black, fontSize: 18),
@@ -376,7 +420,8 @@ class _DashBoardBody extends ConsumerWidget {
                     ),
                     if (clubs.isNotEmpty)
                       const Padding(
-                        padding: EdgeInsets.only(top: 15, bottom: 5, left: 15, right: 20),
+                        padding: EdgeInsets.only(
+                            top: 15, bottom: 5, left: 15, right: 20),
                         child: Text(
                           'Your current clubs',
                           style: TextStyle(color: Colors.black, fontSize: 18),
@@ -395,12 +440,16 @@ class _DashBoardBody extends ConsumerWidget {
                                 club: clubs[index],
                               ),
                               onTap: () async {
-                                ClubModel selectedClub =
-                                    await ref.read(currentClubsController.notifier).getClub(clubId: clubs[index].id);
+                                ClubModel selectedClub = await ref
+                                    .read(currentClubsController.notifier)
+                                    .getClub(clubId: clubs[index].id);
 
-                                ref.read(currentlySelectedClub.state).update((state) => selectedClub);
+                                ref
+                                    .read(currentlySelectedClub.state)
+                                    .update((state) => selectedClub);
                                 if (selectedClub.name != "error") {
-                                  Navigator.push(context, ClubPage.route(selectedClub));
+                                  Navigator.push(
+                                      context, ClubPage.route(selectedClub));
                                 }
                               },
                             );
@@ -417,5 +466,9 @@ class _DashBoardBody extends ConsumerWidget {
         });
       },
     );
+  }
+
+  Future<ClubModel> _getClub(WidgetRef ref, PersonalClubModel club) {
+    return ref.read(currentClubsController.notifier).getClub(clubId: club.id);
   }
 }
