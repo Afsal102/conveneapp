@@ -21,6 +21,11 @@ final currentClubsController =
   return CurrentClubList(clubApi: ref.watch(clubApiProvider));
 });
 
+final clubHistoryProvider = FutureProvider.autoDispose((ref) {
+  final _currentlySelectedClub = ref.watch(currentlySelectedClub);
+  return ref.watch(clubApiProvider).getHistoryBooks(_currentlySelectedClub!.id);
+});
+
 class CurrentClubList extends StateNotifier<AsyncValue<CurrentClubListState>> {
   CurrentClubList({required ClubApi clubApi})
       : _clubApi = clubApi,

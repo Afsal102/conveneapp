@@ -7,6 +7,7 @@ import 'package:conveneapp/core/errors/errors.dart';
 import 'package:conveneapp/core/extensions/extensions.dart';
 import 'package:conveneapp/core/type_defs/type_defs.dart';
 import 'package:conveneapp/features/club/model/club_book_model.dart';
+import 'package:conveneapp/features/club/model/club_history_model.dart';
 import 'package:conveneapp/features/club/model/club_model.dart';
 import 'package:conveneapp/features/club/model/personal_club_model.dart';
 import 'package:dartz/dartz.dart';
@@ -51,8 +52,8 @@ abstract class ClubApi {
   FutureEitherVoid updateClubInfo({required String clubId, String? description, String? coverImageUrl});
 
   Future<String?> uploadClubImage({required String clubId, File? coverImage, String? currentCoverImage});
-  // /// - returns all the history books for the current user
-  // Future<Either<Failure, List<BookModel>>> getHistoryBooks();
+
+  Future<Either<Failure, List<ClubHistoryModel>>> getHistoryBooks(String clubId);
 }
 
 @visibleForTesting
@@ -237,19 +238,20 @@ class ClubApiFirebase implements ClubApi {
     });
   }
 
-  // @override
-  // Future<Either<Failure, List<BookModel>>> getHistoryBooks() async {
-  //   try {
-  //     final books = await _currentUsersReference
-  //         .collection(FirebaseConstants.finishedBooksCollection)
-  //         .orderBy('dateCompleted', descending: true)
-  //         .get();
+  @override
+  Future<Either<Failure, List<ClubHistoryModel>>> getHistoryBooks(String clubId) async {
+    try {
+      final historyBooks = await _clubsReference
+          .doc(clubId)
+          .collection(FirebaseConstants.historyCollection)
+          .orderBy('dueDate', descending: true)
+          .get();
 
-  //     return right(books.docs.map((e) => BookModel.fromMap(e.data()).copyWith(id: e.id)).toList());
-  //   } catch (e) {
-  //     return left(ClubFailure());
-  //   }
-  // }
+      return right(historyBooks.docs.map((e) => ClubHistoryModel.fromMap(e.data())).toList());
+    } catch (e) {
+      return left(ClubFailure());
+    }
+  }
 
   CollectionReference<Map<String, dynamic>> get _clubsReference {
     return _firebaseFirestore.collection(FirebaseConstants.clubsCollection);
