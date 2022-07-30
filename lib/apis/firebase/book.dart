@@ -87,17 +87,15 @@ class BookApiFirebase implements BookApi {
   FutureEitherVoid updateBook(BookModel book) async {
     try {
       if (book.currentPage > book.pageCount) {
-        throw 'You have exceeded the pages in this book.';
+        return left(BookFailure('You have exceeded the pages in this book.'));
       }
 
-      await _currentUsersBooksReference.doc(book.id).update({'currentPage': book.currentPage});
-      return right(Future<void>.value());
+      final updatePageCount = _currentUsersBooksReference.doc(book.id).update({'currentPage': book.currentPage});
+      return right(updatePageCount);
     } on FirebaseException catch (e) {
       return left(BookFailure.fromCode(e.code));
     } on Exception catch (_) {
       return left(BookFailure());
-    } catch (e) {
-      return left(BookFailure(e.toString()));
     }
   }
 
