@@ -312,13 +312,7 @@ class _DashBoardBody extends ConsumerWidget {
                               return GestureDetector(
                                 child: ClubCard(
                                   onShareTap: () async {
-                                    final _club = await _getClub(ref, club);
-
-                                    await ref.read(shareApiProvider).shareClub(
-                                          clubId: _club.id,
-                                          clubTitle: _club.name,
-                                          clubDescription: _club.description,
-                                        );
+                                    return _shareClub(ref, club);
                                   },
                                   club: club,
                                 ),
@@ -435,14 +429,18 @@ class _DashBoardBody extends ConsumerWidget {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemBuilder: (BuildContext context, index) {
+                            final club = clubs[index];
                             return GestureDetector(
                               child: ClubCard(
-                                club: clubs[index],
+                                club: club,
+                                onShareTap: () async {
+                                  return _shareClub(ref, club);
+                                },
                               ),
                               onTap: () async {
-                                ClubModel selectedClub = await ref
+                                final selectedClub = await ref
                                     .read(currentClubsController.notifier)
-                                    .getClub(clubId: clubs[index].id);
+                                    .getClub(clubId: club.id);
 
                                 ref
                                     .read(currentlySelectedClub.state)
@@ -466,6 +464,16 @@ class _DashBoardBody extends ConsumerWidget {
         });
       },
     );
+  }
+
+  Future<void> _shareClub(WidgetRef ref, PersonalClubModel club) async {
+    final _club = await _getClub(ref, club);
+
+    await ref.read(shareApiProvider).shareClub(
+          clubId: _club.id,
+          clubTitle: _club.name,
+          clubDescription: _club.description,
+        );
   }
 
   Future<ClubModel> _getClub(WidgetRef ref, PersonalClubModel club) {
