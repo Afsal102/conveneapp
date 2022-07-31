@@ -65,8 +65,7 @@ class _AppState extends ConsumerState<AppNavigator> {
         }
 
         if (snapshot.connectionState == ConnectionState.done) {
-          FlutterError.onError =
-              FirebaseCrashlytics.instance.recordFlutterError;
+          FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
           AuthState currentAuthState = ref.watch(authStateController);
           switch (currentAuthState) {
             case AuthState.unknown:
@@ -82,8 +81,7 @@ class _AppState extends ConsumerState<AppNavigator> {
                     return AuthPage(
                       appleSignInAvailable: snapshot.data ?? false,
                     );
-                  } else if (snapshot.connectionState ==
-                      ConnectionState.waiting) {
+                  } else if (snapshot.connectionState == ConnectionState.waiting) {
                     return const LoadingPage();
                   }
                   throw ("WE STILL HAVE PROBLEMS");

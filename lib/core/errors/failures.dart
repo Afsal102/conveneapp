@@ -32,12 +32,10 @@ class AuthFailure extends Failure {
 ///
 /// Used by the books api
 class BookFailure extends Failure {
-  BookFailure([String message = 'Un-known error occured please try again'])
-      : super(message: message);
+  BookFailure([String message = 'Un-known error occured please try again']) : super(message: message);
   factory BookFailure.fromCode(String code) {
     if (code == 'permission_denied') {
-      return BookFailure(
-          "Seems like you don't have to correct permissions. Permission Denied");
+      return BookFailure("Seems like you don't have to correct permissions. Permission Denied");
     }
     return BookFailure();
   }
@@ -49,8 +47,7 @@ class BookFailure extends Failure {
 ///
 /// Used by the books api
 class ClubFailure extends Failure {
-  ClubFailure([String message = 'Un-known error occured please try again'])
-      : super(message: message);
+  ClubFailure([String message = 'Un-known error occured please try again']) : super(message: message);
   factory ClubFailure.fromCode(String code) {
     return ClubFailure();
   }

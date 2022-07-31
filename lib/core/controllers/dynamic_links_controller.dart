@@ -25,8 +25,7 @@ class DynamicLinkState extends Equatable {
   );
 }
 
-final dynamicLinksProvider =
-    StateNotifierProvider<DynamicLinksController, DynamicLinkState>(
+final dynamicLinksProvider = StateNotifierProvider<DynamicLinksController, DynamicLinkState>(
   (ref) => DynamicLinksController(
     firebaseDynamicLinks: ref.watch(
       firebaseDynamicLinksProvider,
@@ -45,13 +44,11 @@ class DynamicLinksController extends StateNotifier<DynamicLinkState> {
 
   final FirebaseDynamicLinks _firebaseDynamicLinks;
 
-  StreamSubscription<PendingDynamicLinkData>?
-      _pendingDynamicLinkDataSubscription;
+  StreamSubscription<PendingDynamicLinkData>? _pendingDynamicLinkDataSubscription;
 
   void _listenForDynamicLinks() {
     _pendingDynamicLinkDataSubscription?.cancel();
-    _pendingDynamicLinkDataSubscription =
-        _firebaseDynamicLinks.onLink.listen((event) {
+    _pendingDynamicLinkDataSubscription = _firebaseDynamicLinks.onLink.listen((event) {
       final queryParams = event.link.queryParameters;
       _handleLink(queryParams);
     });
