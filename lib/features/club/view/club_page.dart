@@ -9,6 +9,7 @@ import 'package:conveneapp/features/club/controller/club_controller.dart';
 import 'package:conveneapp/features/club/model/club_book_model.dart';
 import 'package:conveneapp/features/club/model/club_model.dart';
 import 'package:conveneapp/features/club/view/club_book_card.dart';
+import 'package:conveneapp/features/club/view/club_history.dart';
 import 'package:conveneapp/features/club/view/club_info.dart';
 import 'package:conveneapp/features/club/view/club_settings.dart';
 import 'package:conveneapp/features/club/view/members_page.dart';
@@ -209,6 +210,18 @@ class _ClubState extends ConsumerState<ClubPage> {
               ],
             ),
           const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: MediumButton(
+                elevation: 0,
+                backgroundColor: Colors.blue.shade50,
+                child: Text(
+                  "Club History",
+                  style: TextStyle(color: Palette.niceBlue),
+                ),
+                onPressed: () => Navigator.push(context, ClubHistory.route())),
+          ),
+          const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: MediumButton(
