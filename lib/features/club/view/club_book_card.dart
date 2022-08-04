@@ -2,6 +2,7 @@ import 'package:conveneapp/core/text.dart';
 import 'package:conveneapp/features/club/model/club_book_model.dart';
 import 'package:conveneapp/theme/palette.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ClubBookCard extends StatelessWidget {
   final ClubBookModel book;
@@ -9,6 +10,8 @@ class ClubBookCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    DateFormat format = DateFormat.yMMMMd('en_US').add_jm();
+
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: 10.0,
@@ -25,7 +28,7 @@ class ClubBookCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Flexible(child: CustomText(text: book.title)),
+                  Flexible(child: CustomTextMedium(text: book.title)),
                   if (book.authors.isNotEmpty)
                     Flexible(
                         child: Padding(
@@ -39,7 +42,8 @@ class ClubBookCard extends StatelessWidget {
                     height: 10,
                   ),
                   Flexible(
-                      child: CustomText(text: DateTime.fromMillisecondsSinceEpoch(book.dueDate! * 1000).toString())),
+                      child: CustomTextMedium(
+                          text: format.format(DateTime.fromMillisecondsSinceEpoch(book.dueDate! * 1000)).toString())),
                   const SizedBox(
                     height: 5,
                   ),
@@ -66,7 +70,7 @@ class ClubBookCard extends StatelessWidget {
                     child: Image.network(
                       book.coverImage!,
                       width: 60,
-                      height: 90,
+                      height: 80,
                       cacheWidth: 80,
                       cacheHeight: 120,
                       fit: BoxFit.fitHeight,

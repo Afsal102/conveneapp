@@ -118,6 +118,8 @@ class ClubApiFirebase implements ClubApi {
       UploadTask uploadTask = ref.putFile(coverImage);
       TaskSnapshot snap = await uploadTask;
       return await snap.ref.getDownloadURL();
+    } else if (currentCoverImage != null) {
+      return currentCoverImage;
     } else {
       return null;
     }

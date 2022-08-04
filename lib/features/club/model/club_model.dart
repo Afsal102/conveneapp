@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 class ClubModel extends Equatable {
   /// - dont include id in the json converters
   final String id;
+  final String adminId;
   final String name;
   final List<String> members;
   final ClubBookModel? currentBook;
@@ -12,6 +13,7 @@ class ClubModel extends Equatable {
 
   const ClubModel({
     this.id = '',
+    required this.adminId,
     required this.name,
     required this.members,
     this.description,
@@ -21,6 +23,7 @@ class ClubModel extends Equatable {
 
   ClubModel copyWith({
     String? id,
+    String? adminId,
     String? name,
     List<String>? members,
     ClubBookModel? currentBook,
@@ -29,6 +32,7 @@ class ClubModel extends Equatable {
   }) {
     return ClubModel(
       id: id ?? this.id,
+      adminId: adminId ?? this.adminId,
       name: name ?? this.name,
       members: members ?? this.members,
       currentBook: currentBook ?? this.currentBook,
@@ -39,6 +43,7 @@ class ClubModel extends Equatable {
 
   Map<String, dynamic> toMap() {
     return {
+      'adminId': adminId,
       'name': name,
       'members': members,
       'currentBook': currentBook?.toMap(),
@@ -49,6 +54,7 @@ class ClubModel extends Equatable {
 
   factory ClubModel.fromMap(Map<String, dynamic> map) {
     return ClubModel(
+      adminId: map['adminId'],
       name: map['name'],
       members: List<String>.from(map['members']),
       currentBook: map['currentBook'] != null ? ClubBookModel.fromMap(map['currentBook']) : null,
@@ -61,6 +67,7 @@ class ClubModel extends Equatable {
   List<Object?> get props {
     return [
       id,
+      adminId,
       name,
       members,
       currentBook,

@@ -1,180 +1,226 @@
-import 'dart:io';
-
-import 'package:conveneapp/apis/firebase/club.dart';
-
-import 'package:conveneapp/core/button.dart';
-import 'package:conveneapp/core/loading.dart';
-import 'package:conveneapp/core/utility/utils.dart';
-import 'package:conveneapp/features/club/controller/club_controller.dart';
-import 'package:conveneapp/theme/palette.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
+
+import 'package:conveneapp/apis/firebase/user.dart';
+import 'package:conveneapp/core/button.dart';
+import 'package:conveneapp/features/authentication/controller/auth_controller.dart';
+import 'package:conveneapp/features/authentication/model/user_info.dart';
+import 'package:conveneapp/features/club/controller/club_controller.dart';
+import 'package:conveneapp/features/club/view/club_info_edit.dart';
+import 'package:conveneapp/features/club/view/members_page.dart';
+import 'package:conveneapp/features/dashboard/controller/user_info_controller.dart';
+import 'package:conveneapp/theme/palette.dart';
 
 class ClubSettingsView extends ConsumerStatefulWidget {
-  const ClubSettingsView({
-    Key? key,
-  }) : super(key: key);
+  const ClubSettingsView({Key? key}) : super(key: key);
 
   static MaterialPageRoute<dynamic> route() => MaterialPageRoute(
         builder: (context) => const ClubSettingsView(),
       );
-
   @override
   _ClubSettingsViewState createState() => _ClubSettingsViewState();
 }
 
 class _ClubSettingsViewState extends ConsumerState<ClubSettingsView> {
-  final TextEditingController descriptionController = TextEditingController();
-  File? _image;
-
-  @override
-  void initState() {
-    super.initState();
-    descriptionController.text = ref.read(currentlySelectedClub)!.description ?? "";
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    descriptionController.dispose();
-  }
-
-  void selectImage() async {
-    var pickedImage = await pickImage(ImageSource.gallery);
-    setState(() {
-      _image = pickedImage;
-    });
-  }
-
-  void editClub(
-    String clubId,
-    String description,
-    String? currentCoverImage,
-  ) async {
-    final _currentlySelectedClub = ref.read(currentlySelectedClub);
-    final _clubApiProvider = ref.read(clubApiProvider);
-
-    showProgressDialog(context);
-    final imageUrl = await _clubApiProvider.uploadClubImage(
-      clubId: clubId,
-      currentCoverImage: currentCoverImage,
-      coverImage: _image,
-    );
-
-    await _clubApiProvider.updateClubInfo(
-      clubId: clubId,
-      description: description,
-      coverImageUrl: imageUrl,
-    );
-
-    ref
-        .read(currentlySelectedClub.state)
-        .update((state) => _currentlySelectedClub!.copyWith(coverImage: imageUrl, description: description));
-
-    hideProgressDialog(context);
-    Navigator.pop(context);
-  }
-
   @override
   Widget build(BuildContext context) {
     final _currentlySelectedClub = ref.watch(currentlySelectedClub);
-    final screenSize = MediaQuery.of(context).size;
+    final _userInfoController = ref.watch(userInfoController).asData!.value;
 
-    return GestureDetector(
-      onTap: () {
-        final currentFocus = FocusScope.of(context);
-        if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null) {
-          FocusManager.instance.primaryFocus!.unfocus();
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(
-            centerTitle: true,
-            title: Text(
-              "Edit ${_currentlySelectedClub!.name}",
-              style: const TextStyle(color: Palette.niceBlack),
-            )),
-        body: ListView(
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          "${_currentlySelectedClub!.name} Settings",
+          style: const TextStyle(color: Palette.niceBlack),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
           children: [
-            if (_currentlySelectedClub.coverImage != null || _image != null)
-              Container(
-                height: screenSize.height / 4,
-                decoration: BoxDecoration(
-                  borderRadius:
-                      const BorderRadius.only(bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15)),
-                  image: _image != null
-                      ? DecorationImage(image: FileImage(_image!), fit: BoxFit.cover)
-                      : _currentlySelectedClub.coverImage != null
-                          ? DecorationImage(image: NetworkImage(_currentlySelectedClub.coverImage!), fit: BoxFit.cover)
-                          : null,
-                ),
-              ),
             const SizedBox(height: 20),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Description',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Palette.niceBlack,
-                  fontWeight: FontWeight.bold,
+            Center(
+              child: Container(
+                height: 125,
+                width: 125,
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(10),
+                  image: _currentlySelectedClub.coverImage != null
+                      ? DecorationImage(image: NetworkImage(_currentlySelectedClub.coverImage!))
+                      : null,
+                ),
+                child: Builder(
+                  builder: (context) {
+                    if (_currentlySelectedClub.coverImage == null) {
+                      return Center(
+                        child: Text(
+                          _currentlySelectedClub.name.substring(0, 1),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 30,
+                          ),
+                        ),
+                      );
+                    }
+                    return const SizedBox();
+                  },
                 ),
               ),
             ),
-            const SizedBox(height: 4),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text("Write a few words about who this club is for or just a general introduction to the club."),
-            ),
+            const SizedBox(height: 20),
+            FutureBuilder<UserInfo>(
+                future: ref.watch(userApiProvider).getFutureUser(uid: _currentlySelectedClub.adminId),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return Text(
+                      "Club owned by " + snapshot.data!.name!,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    );
+                  } else {
+                    return Container();
+                  }
+                }),
+            const SizedBox(height: 20),
+            const Divider(),
+            const SizedBox(height: 20),
             Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                controller: descriptionController,
-                maxLength: 50,
-                maxLines: 5,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    alignLabelWithHint: true,
-                    hintText: "This group is all about cool fantasy books.."),
+              padding: const EdgeInsets.only(bottom: 16),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: () async {
+                  List<UserInfo> members = [];
+                  for (var member in _currentlySelectedClub.members) {
+                    UserInfo user = await ref.watch(userApiProvider).getFutureUser(uid: member);
+                    members.add(user);
+                  }
+                  Navigator.push(context, MembersPage.route(_currentlySelectedClub, members));
+                },
+                child: const SettingsListTile(
+                  title: "Club Members",
+                  iconData: Icons.people,
+                  showTrailing: true,
+                ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: MediumButton(
-                onPressed: selectImage,
-                child: const Center(
-                  child: Text(
-                    'Add/Change Cover Photo',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Palette.niceWhite,
-                    ),
+            if (_userInfoController.uid == _currentlySelectedClub.adminId)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () => Navigator.push(context, ClubInfoEditView.route()),
+                  child: const SettingsListTile(
+                    title: "Edit Club Profile",
+                    iconData: Icons.edit,
+                    showTrailing: true,
                   ),
                 ),
               ),
+            InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: _currentlySelectedClub.id));
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  content: Text("Club ID Copied!"),
+                ));
+              },
+              child: const SettingsListTile(
+                title: "Invite To Club",
+                iconData: Icons.share,
+                primaryColor: Colors.blue,
+              ),
             ),
-            const SizedBox(height: 16),
+            const Spacer(),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: MediumButton(
-                onPressed: () =>
-                    editClub(_currentlySelectedClub.id, descriptionController.text, _currentlySelectedClub.coverImage),
-                child: const Center(
-                  child: Text(
-                    'Save Settings',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Palette.niceWhite,
-                    ),
-                  ),
+                elevation: 0,
+                backgroundColor: Colors.red.shade50,
+                child: const Text(
+                  "Leave Club",
+                  style: TextStyle(color: Colors.redAccent),
                 ),
+                onPressed: () async {
+                  final userId = ref.watch(currentUserController).asData?.value.uid;
+                  await ref.read(currentClubsController.notifier).removeFromClub(
+                        club: _currentlySelectedClub,
+                        memberId: userId!,
+                      );
+                  Navigator.popUntil(context, (route) => false);
+                },
               ),
             ),
             const SizedBox(height: 16),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class SettingsListTile extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+  final IconData iconData;
+  final Color? primaryColor;
+  final bool? showTrailing;
+
+  const SettingsListTile({
+    Key? key,
+    required this.title,
+    required this.iconData,
+    this.subtitle,
+    this.showTrailing,
+    this.primaryColor,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    bool haveSubtitle = subtitle != null;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Palette.niceGrey,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 50,
+            height: haveSubtitle ? 65 : 50,
+            decoration: BoxDecoration(
+              color: primaryColor ?? Colors.black,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              iconData,
+              color: Palette.niceGrey,
+            ),
+          ),
+          Expanded(
+            child: ListTile(
+              dense: true,
+              title: Text(
+                title,
+                style: TextStyle(color: primaryColor ?? Colors.black, fontSize: 14, fontWeight: FontWeight.w500),
+              ),
+              subtitle: haveSubtitle
+                  ? Text(
+                      subtitle!,
+                      style: const TextStyle(color: Colors.blue, fontSize: 14, fontWeight: FontWeight.w500),
+                    )
+                  : null,
+              trailing: showTrailing == true
+                  ? Icon(
+                      Icons.navigate_next,
+                      color: primaryColor ?? Colors.black,
+                    )
+                  : null,
+            ),
+          ),
+        ],
       ),
     );
   }
