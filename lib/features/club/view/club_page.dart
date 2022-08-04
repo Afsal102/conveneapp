@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:conveneapp/core/button.dart';
+import 'package:conveneapp/features/authentication/controller/auth_controller.dart';
 import 'package:conveneapp/features/club/controller/club_controller.dart';
 import 'package:conveneapp/features/club/model/club_book_model.dart';
 import 'package:conveneapp/features/club/model/club_model.dart';
