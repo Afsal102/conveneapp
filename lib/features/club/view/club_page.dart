@@ -1,13 +1,10 @@
 // A stateless widget displaying the club name in the app bar
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:conveneapp/core/button.dart';
-import 'package:conveneapp/features/authentication/controller/auth_controller.dart';
 import 'package:conveneapp/features/club/controller/club_controller.dart';
 import 'package:conveneapp/features/club/model/club_book_model.dart';
 import 'package:conveneapp/features/club/model/club_model.dart';
 import 'package:conveneapp/features/club/view/club_book_card.dart';
-import 'package:conveneapp/features/club/view/club_history.dart';
 import 'package:conveneapp/features/club/view/club_info.dart';
 import 'package:conveneapp/features/club/view/club_settings.dart';
 import 'package:conveneapp/features/dashboard/controller/user_info_controller.dart';
@@ -147,94 +144,84 @@ class _ClubState extends ConsumerState<ClubPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ClubInfoView(club: _currentlySelectedClub),
-                const SizedBox(height: 16),
-                const Text(
-                  "Select time for next club meeting:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(DateFormat.yMMMMd("en_US").format(_selectedDate)),
-                    const SizedBox(width: 50),
-                    Text(DateFormat("H:00").format(_selectedDate)),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () => _selectDate(),
-                        child: const Text("Change Date"),
+                if (_userInfoController.uid == _currentlySelectedClub.adminId)
+                  Theme(
+                    data: Theme.of(context)
+                        .copyWith(dividerColor: Colors.transparent, visualDensity: VisualDensity.compact),
+                    child: ExpansionTile(
+                      textColor: Colors.black,
+                      iconColor: Colors.black,
+                      collapsedIconColor: Colors.black,
+                      collapsedTextColor: Colors.black,
+                      initiallyExpanded: true,
+                      title: const Text(
+                        "Select time for next club meeting",
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
+                      expandedAlignment: Alignment.topLeft,
+                      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: InkWell(
+                              onTap: () => _selectDate(),
+                              child: SettingsListTile(
+                                title: "Change Date",
+                                iconData: Icons.date_range,
+                                showTrailing: false,
+                                subtitle: DateFormat.yMMMMd("en_US").format(_selectedDate),
+                              )),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: InkWell(
+                              onTap: () => _selectTime(),
+                              child: SettingsListTile(
+                                title: "Change Time",
+                                iconData: Icons.more_time,
+                                showTrailing: false,
+                                subtitle: DateFormat("H:00").format(_selectedDate),
+                              )),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: InkWell(
+                              onTap: () async {
+                                final bookToAdd = await Navigator.push(context, SearchPage.route());
+                                if (bookToAdd is SearchBookModel) {
+                                  ClubBookModel clubBookToAdd = ClubBookModel(
+                                    title: bookToAdd.title,
+                                    authors: bookToAdd.authors,
+                                    pageCount: bookToAdd.pageCount,
+                                    coverImage: bookToAdd.coverImage,
+                                    dueDate: Timestamp.fromDate(_selectedDate).seconds,
+                                  );
+                                  await ref.read(currentClubsController.notifier).addBook(
+                                        club: _currentlySelectedClub,
+                                        book: clubBookToAdd,
+                                      );
+                                  setState(() {
+                                    _currentBook = clubBookToAdd;
+                                  });
+                                }
+                              },
+                              child: const SettingsListTile(
+                                title: "Select a book",
+                                iconData: Icons.book,
+                                showTrailing: true,
+                              )),
+                        ),
+                      ],
                     ),
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () => _selectTime(),
-                        child: const Text("Change Time"),
-                      ),
-                    ),
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () async {
-                          final bookToAdd = await Navigator.push(context, SearchPage.route());
-                          if (bookToAdd is SearchBookModel) {
-                            ClubBookModel clubBookToAdd = ClubBookModel(
-                              title: bookToAdd.title,
-                              authors: bookToAdd.authors,
-                              pageCount: bookToAdd.pageCount,
-                              coverImage: bookToAdd.coverImage,
-                              dueDate: Timestamp.fromDate(_selectedDate).seconds,
-                            );
-                            await ref.read(currentClubsController.notifier).addBook(
-                                  club: _currentlySelectedClub,
-                                  book: clubBookToAdd,
-                                );
-                            setState(() {
-                              _currentBook = clubBookToAdd;
-                            });
-                          }
-                        },
-                        child: const Text("Select a book"),
-                      ),
-                    ),
-                  ],
-                ),
+                  )
+                else
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Center(child: Text('The admin has not yet selected a book')),
+                  ),
               ],
             ),
           const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: MediumButton(
-                elevation: 0,
-                backgroundColor: Colors.blue.shade50,
-                child: Text(
-                  "Edit Club",
-                  style: TextStyle(color: Palette.niceBlue),
-                ),
-                onPressed: () => Navigator.push(context, ClubSettingsView.route())),
-          ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: MediumButton(
-              elevation: 0,
-              backgroundColor: Colors.red.shade50,
-              child: const Text(
-                "Leave Club",
-                style: TextStyle(color: Colors.redAccent),
-              ),
-              onPressed: () async {
-                final userId = ref.watch(currentUserController).asData?.value.uid;
-                await ref.read(currentClubsController.notifier).removeFromClub(
-                      club: _currentlySelectedClub,
-                      memberId: userId!,
-                    );
-                Navigator.pop(context);
-              },
-            ),
-          ),
         ],
       ),
     );
