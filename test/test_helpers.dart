@@ -5,6 +5,7 @@ import 'package:conveneapp/apis/firebase/user.dart';
 import 'package:conveneapp/features/book/model/book_model.dart';
 import 'package:conveneapp/features/search/model/search_book_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_share_me/flutter_share_me.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -29,6 +30,8 @@ class MockCollectionReference extends Mock implements CollectionReference<Map<St
 class MockDocumentReference extends Mock implements DocumentReference<Map<String, dynamic>> {}
 
 class MockQuery extends Mock implements Query<Map<String, dynamic>> {}
+
+class MockFlutterShareMe extends Mock implements FlutterShareMe {}
 
 const bookModel = BookModel(
     id: 'id',

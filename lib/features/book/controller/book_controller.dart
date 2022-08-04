@@ -48,6 +48,11 @@ class CurrentBookList extends StateNotifier<AsyncValue<CurrentBookListState>> {
     _emitConditionalState(result);
   }
 
+  Future<void> shareReviewToTwitter({required BookModel book}) async {
+    final result = await _bookApi.shareReviewToTwitter(book);
+    _emitConditionalState(result);
+  }
+
   Future<void> deleteBook({required BookModel book}) async {
     final result = await _bookApi.deleteBook(book);
     _emitConditionalState(result);

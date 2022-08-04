@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:conveneapp/apis/firebase/firebase_api_providers.dart';
 import 'package:conveneapp/core/constants/constants.dart';
@@ -10,14 +12,23 @@ import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_share_me/flutter_share_me.dart';
 
-final bookApiProvider = Provider<BookApi>((ref) => BookApiFirebase(
-    firebaseFirestore: ref.watch(firebaseFirestoreProvider), firebaseAuth: ref.watch(firebaseAuthProvider)));
+final bookApiProvider = Provider<BookApi>(
+  (ref) => BookApiFirebase(
+    firebaseFirestore: ref.watch(firebaseFirestoreProvider),
+    firebaseAuth: ref.watch(firebaseAuthProvider),
+    flutterShareMe: FlutterShareMe(),
+  ),
+);
 
 /// - all the transactions must be pointed to the current user's reference
 abstract class BookApi {
   /// - finishes a book and adds it to the `finishedBooks` reference
   FutureEitherVoid finishBook(BookModel book);
+
+  /// - share review to twitter
+  FutureEitherVoid shareReviewToTwitter(BookModel book);
 
   /// - create a new book
   FutureEitherVoid addBook(SearchBookModel book);
@@ -39,11 +50,14 @@ abstract class BookApi {
 class BookApiFirebase implements BookApi {
   final FirebaseFirestore _firebaseFirestore;
   final FirebaseAuth _firebaseAuth;
+  final FlutterShareMe _flutterShareMe;
   BookApiFirebase({
     required FirebaseFirestore firebaseFirestore,
     required FirebaseAuth firebaseAuth,
+    required FlutterShareMe flutterShareMe,
   })  : _firebaseAuth = firebaseAuth,
-        _firebaseFirestore = firebaseFirestore;
+        _firebaseFirestore = firebaseFirestore,
+        _flutterShareMe = flutterShareMe;
 
   @override
   FutureEitherVoid addBook(SearchBookModel book) async {
@@ -79,6 +93,25 @@ class BookApiFirebase implements BookApi {
     } on FirebaseException catch (e) {
       return left(BookFailure.fromCode(e.code));
     } on Exception catch (_) {
+      return left(BookFailure());
+    }
+  }
+
+  @override
+  FutureEitherVoid shareReviewToTwitter(BookModel book) async {
+    try {
+      String? res = await _flutterShareMe.shareToTwitter(
+        msg:
+            '${book.title} by ${book.authors[0]} is ${book.review}. I rate it ${book.rating}/5. \nPosted from Convene. Check it out here: ',
+        url: Platform.isAndroid
+            ? 'https://play.google.com/store/apps/details?id=com.convene.conveneapp'
+            : 'https://apps.apple.com/us/app/convene/id1586470306',
+      );
+      if (res!.contains('PlatformException')) {
+        return left(BookFailure('Please install Twitter to proceed.'));
+      }
+      return right(Future<void>.value());
+    } catch (e) {
       return left(BookFailure());
     }
   }
