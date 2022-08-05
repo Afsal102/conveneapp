@@ -12,3 +12,16 @@ class CustomText extends StatelessWidget {
     );
   }
 }
+
+class CustomTextMedium extends StatelessWidget {
+  final String text;
+  const CustomTextMedium({Key? key, required this.text}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(fontSize: 16),
+    );
+  }
+}

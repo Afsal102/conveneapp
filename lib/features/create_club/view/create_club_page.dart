@@ -67,7 +67,7 @@ class CreateClubView extends ConsumerWidget {
 
                 if (userId != null) {
                   await ref.read(currentClubsController.notifier).addClub(
-                        club: ClubModel(name: nameController.text, members: [userId]),
+                        club: ClubModel(name: nameController.text, members: [userId], adminId: userId),
                       );
                 }
                 Navigator.pop(context);

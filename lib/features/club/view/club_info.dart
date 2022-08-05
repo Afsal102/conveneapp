@@ -19,21 +19,22 @@ class _ClubInfoViewState extends ConsumerState<ClubInfoView> {
     return Column(
       children: [
         if (widget.club.coverImage != null)
-          Container(
-            height: screenSize.height / 4.5,
-            decoration: BoxDecoration(
-                borderRadius:
-                    const BorderRadius.only(bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15)),
-                image: DecorationImage(
-                  image: NetworkImage(widget.club.coverImage!),
-                  fit: BoxFit.cover,
-                )),
-          ),
-        if (widget.club.description != null && widget.club.description!.isNotEmpty)
-          Theme(
-            data: Theme.of(context).copyWith(
-              dividerColor: Colors.transparent,
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Container(
+              height: screenSize.height / 4.0,
+              decoration: BoxDecoration(
+                  borderRadius:
+                      const BorderRadius.only(bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15)),
+                  image: DecorationImage(
+                    image: NetworkImage(widget.club.coverImage!),
+                    fit: BoxFit.cover,
+                  )),
             ),
+          ),
+        if (widget.club.description != null && widget.club.description!.isNotEmpty) ...[
+          Theme(
+            data: Theme.of(context).copyWith(dividerColor: Colors.transparent, visualDensity: VisualDensity.compact),
             child: ExpansionTile(
               textColor: Colors.black,
               iconColor: Colors.black,
@@ -41,13 +42,13 @@ class _ClubInfoViewState extends ConsumerState<ClubInfoView> {
               collapsedTextColor: Colors.black,
               title: Text(
                 "About ${widget.club.name}",
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               expandedAlignment: Alignment.topLeft,
               expandedCrossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 5),
                   child: Text(
                     widget.club.description!,
                     maxLines: 25,
@@ -57,6 +58,11 @@ class _ClubInfoViewState extends ConsumerState<ClubInfoView> {
               ],
             ),
           ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Divider(),
+          ),
+        ],
       ],
     );
   }
