@@ -27,9 +27,13 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.305072997566-bl75mgp4tbrh3l1amoaskaqgrisbtiqt</string>
+				<string>com.googleusercontent.apps.1059774949129-j2avbkqo30tihd0tqj3tqco836t82rkd</string>
 			</array>
 		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>twitter</string>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>

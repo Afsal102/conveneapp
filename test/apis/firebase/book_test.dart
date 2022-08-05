@@ -25,6 +25,7 @@ void main() {
   late MockQuery mockQuery;
   late MockQuerySnapshot mockQuerySnapshot;
   late MockQueryDocumentSnapshot mockQueryDocumentSnapshot;
+  late MockFlutterShareMe mockFlutterShareMe;
 
   setUp(() {
     mockFirebaseFirestore = MockFirebaseFirestore();
@@ -35,8 +36,13 @@ void main() {
     mockQuery = MockQuery();
     mockQuerySnapshot = MockQuerySnapshot();
     mockQueryDocumentSnapshot = MockQueryDocumentSnapshot();
+    mockFlutterShareMe = MockFlutterShareMe();
 
-    bookApiFirebase = BookApiFirebase(firebaseFirestore: mockFirebaseFirestore, firebaseAuth: mockFirebaseAuth);
+    bookApiFirebase = BookApiFirebase(
+      firebaseFirestore: mockFirebaseFirestore,
+      firebaseAuth: mockFirebaseAuth,
+      flutterShareMe: mockFlutterShareMe,
+    );
   });
   const uid = 'uid';
 

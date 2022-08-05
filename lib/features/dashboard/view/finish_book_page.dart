@@ -104,7 +104,47 @@ class _FinishBookPageState extends ConsumerState<FinishBookPage> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(top: 40.0),
+                padding: const EdgeInsets.only(top: 20.0),
+                child: TextButton(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/other/twitter.png',
+                        color: Palette.niceBlue,
+                        height: 20.0,
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        'Share on Twitter',
+                        style: TextStyle(color: Palette.niceBlue),
+                      ),
+                    ],
+                  ),
+                  onPressed: () {
+                    if (rating == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Need to give book a rating")),
+                      );
+                    } else if (_reviewController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Please add a review")),
+                      );
+                    } else {
+                      ref.read(currentBooksController.notifier).shareReviewToTwitter(
+                            book: widget.bookModel.copyWith(
+                              rating: rating,
+                              review: _reviewController.text,
+                            ),
+                          );
+                    }
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 10.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
